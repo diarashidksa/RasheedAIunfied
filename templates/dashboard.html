@@ -1,0 +1,181 @@
+{% include 'navbar.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rasheed AI - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='brand.png') }}">
+</head>
+<body>
+<header>
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='brand.png') }}" alt="Brand Logo">
+        <h1>Rasheed AI - Dashboard</h1>
+    </div>
+    <div class="header-buttons">
+        <button id="refresh-btn">Refresh Data</button>
+        <button id="export-btn">Export to Excel</button>
+        <button id="lang-toggle">عربي</button>
+    </div>
+</header>
+
+<main>
+    <section class="metrics-container">
+        <div class="metric-card">
+            <h3>Total Conversations</h3>
+            <p id="total-conversations">0</p>
+        </div>
+        <div class="metric-card">
+            <h3>Total Responses</h3>
+            <p id="total-responses">0</p>
+        </div>
+        <div class="metric-card">
+            <h3>Responses per Conversation</h3>
+            <p id="responses-per-conversation">Select a conversation</p>
+        </div>
+    </section>
+
+    <section class="logs-container">
+        <h2>Conversation Logs</h2>
+        <div class="filter-container">
+            <label for="conversation-filter">Filter by Session ID:</label>
+            <select id="conversation-filter">
+                <option value="">All Conversations</option>
+            </select>
+            <label for="start-date">From:</label>
+            <input type="date" id="start-date">
+            <label for="end-date">To:</label>
+            <input type="date" id="end-date">
+            <button id="apply-filters-btn">Apply Filters</button>
+        </div>
+
+        <div id="table-view" style="display: none;">
+            <div class="table-responsive">
+                <table id="chat-table">
+                    <thead>
+                        <tr>
+                            <th>Session ID</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>IP Address</th>
+                            <th>User Message</th>
+                            <th>Bot Response</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <button id="prev-page-btn" disabled>Previous</button>
+                <span id="page-info">Page 1 of 1</span>
+                <button id="next-page-btn" disabled>Next</button>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>Powered by <a href="http://www.rasheed.ai" target="_blank">www.rasheed.ai</a></p>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const refreshBtn = document.getElementById("refresh-btn");
+    const exportBtn = document.getElementById("export-btn");
+    const conversationFilter = document.getElementById("conversation-filter");
+    const tableBody = document.querySelector("#chat-table tbody");
+    const totalConversationsEl = document.getElementById("total-conversations");
+    const totalResponsesEl = document.getElementById("total-responses");
+    const responsesPerConversationEl = document.getElementById("responses-per-conversation");
+    const tableView = document.getElementById("table-view");
+
+    let allLogs = [];
+    let currentPage = 1;
+    const rowsPerPage = 10;
+
+    async function fetchData() {
+        try {
+            const res = await fetch("/refresh_data");
+            const result = await res.json();
+
+            if (!result.success) {
+                alert("Failed to load data: " + result.message);
+                return;
+            }
+
+            allLogs = result.data.chat_logs;
+            const numConversations = result.data.num_conversations;
+            const responsesPerConversation = result.data.responses_per_conversation;
+
+            // Metrics
+            totalConversationsEl.textContent = numConversations;
+            totalResponsesEl.textContent = allLogs.length;
+
+            // Populate filter
+            populateSessionFilter(Object.keys(responsesPerConversation));
+
+            // Display table
+            renderTable();
+            tableView.style.display = "block";
+
+            // Update click event for session selection
+            conversationFilter.addEventListener("change", () => {
+                responsesPerConversationEl.textContent =
+                    conversationFilter.value
+                        ? `Responses: ${responsesPerConversation[conversationFilter.value]}`
+                        : "Select a conversation";
+                currentPage = 1;
+                renderTable();
+            });
+        } catch (err) {
+            console.error("Error fetching data:", err);
+        }
+    }
+
+    function populateSessionFilter(sessionIds) {
+        conversationFilter.innerHTML = '<option value="">All Conversations</option>';
+        sessionIds.forEach(id => {
+            const option = document.createElement("option");
+            option.value = id;
+            option.textContent = id;
+            conversationFilter.appendChild(option);
+        });
+    }
+
+    function renderTable() {
+        const selectedSession = conversationFilter.value;
+        let filteredLogs = selectedSession
+            ? allLogs.filter(log => log.session_id === selectedSession)
+            : allLogs;
+
+        // Pagination
+        const start = (currentPage - 1) * rowsPerPage;
+        const paginatedLogs = filteredLogs.slice(start, start + rowsPerPage);
+
+        // Populate table
+        tableBody.innerHTML = "";
+        paginatedLogs.forEach(log => {
+            const row = `<tr>
+                <td>${log.session_id}</td>
+                <td>${log.date}</td>
+                <td>${log.time}</td>
+                <td>${log.ip_address}</td>
+                <td>${log.user_message}</td>
+                <td>${log.bot_response}</td>
+            </tr>`;
+            tableBody.insertAdjacentHTML("beforeend", row);
+        });
+    }
+
+    refreshBtn.addEventListener("click", fetchData);
+    exportBtn.addEventListener("click", () => {
+        window.location.href = "/export_excel";
+    });
+
+    fetchData();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<nav style="background:#2c3e50; padding:10px; display:flex; gap:10px;">
+    {% if request.path != '/dashboard' %}
+        <a href="/dashboard" style="color:white; text-decoration:none; font-weight:bold;">📊 Dashboard</a>
+    {% endif %}
+
+    {% if request.path != '/training' %}
+        <a href="/training" style="color:white; text-decoration:none; font-weight:bold;">🧠 Training</a>
+    {% endif %}
+
+    {% if request.path != '/chatbot' %}
+        <a href="/chatbot" style="color:white; text-decoration:none; font-weight:bold;">💬 Chatbot</a>
+    {% endif %}
+</nav>
+<hr>
