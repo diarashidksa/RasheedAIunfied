@@ -20,3 +20,5 @@ pandas
 xlsxwriter
 
 python-dotenv
+
+gunicorn
