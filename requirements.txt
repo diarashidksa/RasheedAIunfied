@@ -1,13 +1,5 @@
-# Core dependencies
-flask==2.3.4          # Or FastAPI if you use that
-gunicorn==23.0.0
-
-# NLP / Transformers
-torch==2.1.0+cpu
+flask==2.3.4
 sentence-transformers==2.2.2
 transformers==4.56.0
-
-# Optional utils
 numpy
 scipy
-
