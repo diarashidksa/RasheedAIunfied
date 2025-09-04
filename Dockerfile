@@ -1,4 +1,4 @@
-# Use official Python 3.9 slim image
+# Base image
 FROM python:3.9-slim
 
 # Set working directory
@@ -6,24 +6,16 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    git \
     build-essential \
     curl \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements.txt
+# Copy requirements file
 COPY requirements.txt .
 
-# Uninstall any old PyTorch just in case
-RUN pip uninstall -y torch torchvision torchaudio || true
-
-# Install PyTorch 2.1 CPU version (adjust if you have GPU/CUDA)
-RUN pip install torch==2.1.0+cpu torchvision==0.16.0+cpu torchaudio==2.1.0+cpu \
-    --index-url https://download.pytorch.org/whl/cpu
-
-# Install remaining Python dependencies
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy app code
 COPY . .

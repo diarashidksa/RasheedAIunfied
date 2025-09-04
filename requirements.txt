@@ -1,8 +1,14 @@
-flask==2.3.3
-transformers==4.56.0
-sentence-transformers==2.2.2
-torchvision==0.16.0  # already installed via torch line, can omit
-nltk==3.9.1
-numpy==2.0.2
-scikit-learn==1.6.1
-pillow==11.3.0
+# PyTorch 2.1 CPU version
+torch==2.1.0+cpu
+torchvision==0.16.0+cpu
+torchaudio==2.1.0+cpu
+-f https://download.pytorch.org/whl/cpu
+
+# Transformers & Sentence Transformers
+transformers>=4.35.0
+sentence-transformers>=2.2.2
+
+# Flask or FastAPI depending on your app
+flask==2.3.5
+
+# Any other dependencies your app needs
