@@ -1,28 +1,27 @@
-# Use an official Python runtime as a parent image
+# Use official Python 3.9 image
 FROM python:3.9-slim
-
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
 
 # Set working directory
 WORKDIR /app
 
-#Copy requirements first for caching
+# Copy requirements first
 COPY requirements.txt .
 
-# Upgrade pip and install PyTorch CPU version first
-RUN pip install --upgrade pip && \
-    pip install torch==2.1.0+cpu --index-url https://download.pytorch.org/whl/cpu
+# Upgrade pip
+RUN pip install --upgrade pip
 
-# Install other dependencies
-RUN pip install -r requirements.txt
+# Install all requirements except torch
+RUN pip install --no-deps -r requirements.txt
 
-# Copy application code
+# Install the correct PyTorch CPU version last to ensure compatibility
+RUN pip install torch==2.1.0+cpu torchvision==0.16.0+cpu torchaudio==2.1.0+cpu \
+    --index-url https://download.pytorch.org/whl/cpu
+
+# Copy the rest of your application code
 COPY . .
 
-# Expose the port (optional, mostly for documentation)
+# Expose port
 EXPOSE 10000
 
-# Start Gunicorn using the $PORT environment variable
-CMD gunicorn --bind 0.0.0.0:$PORT WebApp:app --workers 1 --threads 4
+# Start Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "WebApp:app", "--workers", "1", "--threads", "4"]
