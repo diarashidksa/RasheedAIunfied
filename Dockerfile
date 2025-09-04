@@ -1,32 +1,28 @@
-# Use slim Python 3.9 base image
+# Use Python 3.9 slim base image
 FROM python:3.9-slim
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements.txt
+# Install system dependencies for PyTorch and faiss
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libopenblas-dev \
+    libomp-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy only requirements first for caching
 COPY requirements.txt .
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        wget \
-        git \
-        && rm -rf /var/lib/apt/lists/*
-
-# Upgrade pip
-RUN pip install --upgrade pip
-
-# Install Python dependencies
+# Install Python dependencies (CPU-only PyTorch)
 RUN pip install --no-cache-dir -r requirements.txt -f https://download.pytorch.org/whl/cpu
 
-# Copy the rest of the app
+# Copy the rest of the app code
 COPY . .
 
-# Expose port for Render
+# Expose the port for Gunicorn
 EXPOSE 8000
 
-# Run Gunicorn server
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "WebApp:app"]
-
+# Run the app with Gunicorn
+CMD ["gunicorn", "WebApp:app", "--bind", "0.0.0.0:8000", "--workers", "1", "--timeout", "120"]
 
