@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: my-flask-faiss-app
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    autoDeploy: true
+    # Optional: health check
+    healthCheckPath: /

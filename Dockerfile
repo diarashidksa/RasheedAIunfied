@@ -1,30 +1,30 @@
-# Use official Python runtime
+# Use official Python 3.9 slim image
 FROM python:3.9-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies needed for FAISS and building packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        cmake \
-        wget \
-        git \
-        libopenblas-dev \
+# Install system dependencies for FAISS
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    libopenblas-dev \
+    libomp-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy only requirements first to leverage Docker cache
+# Copy requirements first (cache layer)
 COPY requirements.txt .
 
-# Force compatible NumPy and install dependencies
-RUN pip install --no-cache-dir "numpy<2" && \
-    pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-# Copy the rest of the app code
+# Copy the app code
 COPY . .
 
-# Expose the port the app runs on
+# Expose port
 EXPOSE 8000
 
-# Use Gunicorn to run the app
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "WebApp:app"]
+# Command to run the app with Gunicorn
+CMD ["gunicorn", "WebApp:app", "--bind", "0.0.0.0:8000", "--workers", "1"]

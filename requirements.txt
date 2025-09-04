@@ -1,20 +1,18 @@
-flask==2.3.3
+# Pin NumPy <2 for FAISS compatibility
+numpy<2
+
+# FAISS CPU version (switch to faiss-gpu if you have GPU)
+faiss-cpu
+
+# Web framework
+flask==2.3.2
+
+# WSGI server
 gunicorn==21.2.0
+
+# Other dependencies (add yours)
+requests==2.31.0
 python-dotenv==1.0.0
 
-torch==2.1.0
-torchvision==0.16.0
-torchaudio==2.1.0
-
-transformers==4.56.0
-sentence-transformers==5.1.0
-
-scikit-learn==1.6.1
-numpy==2.0.2
-scipy==1.13.1
-pillow==11.3.0
-requests==2.32.5
-
-faiss-cpu==1.7.4
 
 
