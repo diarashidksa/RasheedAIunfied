@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED=1
 # Set working directory
 WORKDIR /app
 
-# Copy requirements first for caching
+#Copy requirements first for caching
 COPY requirements.txt .
 
 # Upgrade pip and install PyTorch CPU version first
