@@ -1,30 +1,29 @@
-# Use official Python 3.9 slim image
+# Use an official Python 3.9 image
 FROM python:3.9-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for FAISS
+# Install system dependencies (FAISS might need these)
 RUN apt-get update && apt-get install -y \
     build-essential \
-    cmake \
     libopenblas-dev \
-    libomp-dev \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first (cache layer)
+# Copy requirements and install
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Copy the app code
+# Copy app source code
 COPY . .
 
 # Expose port
 EXPOSE 8000
 
-# Command to run the app with Gunicorn
-CMD ["gunicorn", "WebApp:app", "--bind", "0.0.0.0:8000", "--workers", "1"]
+# Start Gunicorn server
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "WebApp:app"]
