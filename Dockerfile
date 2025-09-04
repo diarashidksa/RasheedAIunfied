@@ -1,35 +1,28 @@
-# Use official Python 3.9 slim image
+# Use an official Python runtime as a parent image
 FROM python:3.9-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Set working directory
 WORKDIR /app
 
-# Avoid Python buffering logs
-ENV PYTHONUNBUFFERED=1
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    git \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy requirements first for caching
 COPY requirements.txt .
 
-# Install dependencies
-RUN pip install --upgrade pip
-# Install PyTorch 2.1 CPU version + other packages
-RUN pip install torch==2.1.0+cpu --index-url https://download.pytorch.org/whl/cpu
+# Upgrade pip and install PyTorch CPU version first
+RUN pip install --upgrade pip && \
+    pip install torch==2.1.0+cpu --index-url https://download.pytorch.org/whl/cpu
+
+# Install other dependencies
 RUN pip install -r requirements.txt
 
 # Copy application code
 COPY . .
 
-# Expose the port Render uses
-ENV PORT=10000
-EXPOSE $PORT
+# Expose the port (optional, mostly for documentation)
+EXPOSE 10000
 
-# Start Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:10000", "WebApp:app", "--workers", "1", "--threads", "4"]
-
+# Start Gunicorn using the $PORT environment variable
+CMD gunicorn --bind 0.0.0.0:$PORT WebApp:app --workers 1 --threads 4
