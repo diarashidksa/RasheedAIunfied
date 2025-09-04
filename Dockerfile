@@ -1,24 +1,31 @@
-# Use an official Python runtime as a parent image
-# python:3.9-slim is a good choice for smaller image size
+# Use slim Python image for smaller size
 FROM python:3.9-slim
 
-# Set the working directory in the container
+# Prevent Python from buffering stdout/stderr and writing pyc files
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Set work directory
 WORKDIR /app
 
-# Copy the requirements.txt file into the container at /app
+# Install system dependencies (needed for pandas, PyTorch, etc.)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libopenblas-dev \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first to leverage Docker cache
 COPY requirements.txt .
 
-# Install any needed packages specified in requirements.txt
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application's source code into the container
-# This is done after installing dependencies to leverage Docker's build cache
+# Copy app source
 COPY . .
 
-# Expose the port the app runs on (assuming Flask's default)
+# Expose for documentation (Render overrides this with $PORT)
 EXPOSE 5000
 
-# Define the command to run the application
-# This uses 'gunicorn' for a production-ready server, which is better than the Flask dev server
-# If you don't have gunicorn, you can use: CMD ["python", "WebApp.py"]
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "WebApp:app"]
+# Run with Gunicorn, binding to Render's $PORT
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} WebApp:app"]
