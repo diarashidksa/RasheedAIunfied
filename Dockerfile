@@ -1,9 +1,5 @@
-# Use official Python base image
+# Use official Python 3.9 slim image
 FROM python:3.9-slim
-
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
 
 # Set working directory
 WORKDIR /app
@@ -11,15 +7,15 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
     git \
+    curl \
     && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements file
-COPY requirements.txt .
 
 # Upgrade pip
 RUN pip install --upgrade pip
+
+# Copy requirements
+COPY requirements.txt .
 
 # Install Python dependencies (including PyTorch CPU)
 RUN pip install --no-cache-dir -r requirements.txt -f https://download.pytorch.org/whl/cpu
@@ -27,8 +23,8 @@ RUN pip install --no-cache-dir -r requirements.txt -f https://download.pytorch.o
 # Copy application code
 COPY . .
 
-# Expose port (adjust to your app)
+# Expose port (adjust if your app uses a different one)
 EXPOSE 8000
 
-# Start the app with Gunicorn (adjust app module if needed)
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "WebApp:app", "--workers", "2"]
+# Run Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "WebApp:app", "--workers", "1"]

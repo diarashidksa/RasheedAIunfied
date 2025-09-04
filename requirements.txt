@@ -1,12 +1,7 @@
-# PyTorch CPU version
+flask==2.3.3
+gunicorn==21.2.0
 torch==2.1.0
 torchvision==0.16.0
 torchaudio==2.1.0
-
-# Transformers & Sentence Transformers
 transformers>=4.35.0
 sentence-transformers>=2.2.2
-
-# Web framework
-flask==2.3.5
-gunicorn==21.2.0
