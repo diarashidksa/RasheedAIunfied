@@ -4,29 +4,27 @@ FROM python:3.9-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for building Python packages
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements file
-COPY requirements.txt .
-
-# Upgrade pip first
+# Upgrade pip
 RUN pip install --upgrade pip
 
-# Install Python dependencies (PyTorch CPU, retry on failures)
-RUN pip install --no-cache-dir -r requirements.txt \
-    -f https://download.pytorch.org/whl/cpu \
-    --retries 10 --timeout 120
+# Copy requirements first for caching
+COPY requirements.txt .
 
-# Copy application code
+# Install Python dependencies, including PyTorch CPU
+RUN pip install --no-cache-dir -r requirements.txt -f https://download.pytorch.org/whl/cpu
+
+# Copy app code
 COPY . .
 
-# Expose port if using Flask or FastAPI
-EXPOSE 5000
+# Expose the port
+EXPOSE 8000
 
-# Default command to run your app
-CMD ["python", "WebApp.py"]
+# Command to run the app using Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "WebApp:app"]
