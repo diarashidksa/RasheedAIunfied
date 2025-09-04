@@ -1,14 +1,12 @@
-# PyTorch 2.1 CPU version
-torch==2.1.0+cpu
-torchvision==0.16.0+cpu
-torchaudio==2.1.0+cpu
--f https://download.pytorch.org/whl/cpu
+# PyTorch CPU version
+torch==2.1.0
+torchvision==0.16.0
+torchaudio==2.1.0
 
 # Transformers & Sentence Transformers
 transformers>=4.35.0
 sentence-transformers>=2.2.2
 
-# Flask or FastAPI depending on your app
+# Web framework
 flask==2.3.5
-
-# Any other dependencies your app needs
+gunicorn==21.2.0
